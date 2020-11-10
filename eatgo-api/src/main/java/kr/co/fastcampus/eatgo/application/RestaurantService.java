@@ -22,7 +22,7 @@ public class RestaurantService {
     }
 
     public Restaurant getRestaurant(Long id){
-        Restaurant restaurant=restaurantRepository.findById(id);    //id가 매칭되는 레스토랑 객체를 repository에서 가지고 옴
+        Restaurant restaurant=restaurantRepository.findById(id).orElse(null);    //id가 매칭되는 레스토랑 객체를 repository에서 가지고 옴
 
         List<MenuItem> menuItems=menuItemRepository.findAllByRestaurantId(id);        //(2)메뉴정보
         restaurant.setMenuItems(menuItems);
@@ -33,5 +33,20 @@ public class RestaurantService {
         List<Restaurant> restaurants=restaurantRepository.findAll();
         return restaurants;
 
+    }
+
+    public Restaurant addRestaurant(Restaurant restaurant) {
+        //restaurant.setId(1234L);
+        return restaurantRepository.save(restaurant);
+    }
+
+    public Restaurant updateRestaurant(long id, String name, String address) {
+        // TODO: update Restaurant...
+
+        Restaurant restaurant=restaurantRepository.findById(id).orElse(null);
+//        restaurant.setName(name);
+        restaurant.updateInformation(name,address);
+        //        Restaurant restaurant=new Restaurant(id,name,address);
+        return restaurant;
     }
 }

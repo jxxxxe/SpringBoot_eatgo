@@ -1,28 +1,27 @@
 package kr.co.fastcampus.eatgo.Interfaces;
 
 import kr.co.fastcampus.eatgo.application.RestaurantService;
-import kr.co.fastcampus.eatgo.domain.MenuItem;
-import kr.co.fastcampus.eatgo.domain.MenuItemRepository;
 import kr.co.fastcampus.eatgo.domain.Restaurant;
-import kr.co.fastcampus.eatgo.domain.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
-
+@CrossOrigin
 @RestController     //바로 밑에 처럼 컨트롤러 객체를 만들지 않아도 됨
 
 public class RestaurantController {
-
-    @Autowired  //컨트롤러를 만들어줄 때 스프링이 알아서 저장소를 여기에 생성
-    private RestaurantRepository restaurantRepository;
-    //=new RestaurantRepository(); // 이렇게 직접 저장소 객체를 생성하지 않아도 자동 생성
-
-    @Autowired
-    private MenuItemRepository menuItemRepository;  //새로운 저장소생성, autowired필요
+//
+//    @Autowired  //컨트롤러를 만들어줄 때 스프링이 알아서 저장소를 여기에 생성
+//    private RestaurantRepository restaurantRepository;
+//    //=new RestaurantRepository(); // 이렇게 직접 저장소 객체를 생성하지 않아도 자동 생성
+//
+//    @Autowired
+//    private MenuItemRepository menuItemRepository;  //새로운 저장소생성, autowired필요
+    // restaurantService로만 처리하므로 repository 삭제
 
     @Autowired
     private RestaurantService restaurantService;
@@ -62,5 +61,27 @@ public class RestaurantController {
 //        List<MenuItem> menuItems=menuItemRepository.findAllByRestaurantId(id);        //(2)메뉴정보
 //        restaurant.setMenuItem(menuItems);      //메뉴아이템 클래스추가(add->set)
         return restaurant;
+
+    }
+    @PostMapping("/restaurants")
+    public ResponseEntity<?> create(@RequestBody Restaurant resource) throws URISyntaxException {
+        String name = resource.getName();
+        String address = resource.getAddress();
+
+        Restaurant restaurant=new Restaurant(name, address);
+        restaurantService.addRestaurant(restaurant);
+
+        URI location=new URI("/restaurants/"+restaurant.getId());
+        return ResponseEntity.created(location).body("{}");
+    }
+
+    @PatchMapping("/restaurants/{id}")
+    public String update(@PathVariable("id") Long id,
+                         @RequestBody Restaurant resource){     //restaurant=> resource
+        String name = resource.getName();
+        String address = resource.getAddress();
+        restaurantService.updateRestaurant(id, name, address);  //=introduce variable
+        return  "{}";
+
     }
 }
