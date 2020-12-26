@@ -1,79 +1,73 @@
 package kr.co.fastcampus.eatgo.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Restaurant {
 
     @Id
     @GeneratedValue
+    @Setter
     private long id;  //생성자에 초기화 필요
 
+    @NotEmpty
     private String name;
+
+    @NotEmpty
     private String address;
 
     @Transient
-    private List<MenuItem> menuItems=new ArrayList<MenuItem>();     //addmenuitems 메서드에 따라 필드에 추가
-
-    public Restaurant() {
-    }
-
-    public Restaurant(String name, String address) {
-        this.name=name;
-        this.address=address;
-    }
-
-    public Restaurant(Long id, String name, String address) {
-        this.id=id;
-       this.name=name;
-       this.address =address;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<MenuItem> menuItems;     //addmenuitems 메서드에 따라 필드에 추가
 
     public String getInformation() {
         return name+" in "+ address;
     }
 
-    public void setId(long id) {
-        this.id=id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public List<MenuItem> getMenuItems(){
-        return menuItems;       //메뉴아이템을 얻어오는것
-    }
-
-    public void addMenuItem(MenuItem menuItem) {
-        menuItems.add(menuItem);
-    }
-
     public void setMenuItems(List<MenuItem> menuItems) {
-        for(MenuItem menuItem : menuItems)      //리스트 menuitems에 menuitem을 하나씩
-            addMenuItem(menuItem);              //직접 넣어준다.
-        //* for(A:B) B에서 차례대로 객체를 꺼내서 a에다가 넣겠다.(B에 더이상 꺼낼 객체가 없을 때 까지)
-    }
+       this.menuItems=new ArrayList<>(menuItems);   //menuitems생성을 위에 선언에서 안해줬으므로 여기서 함
+        //set은 새로 등록하는 것
+        // addmenuitems 메서드를 없앰 >> addmenuitems를 단독으로 쓰는 파일에서 setmenuitems를 사용하도록 함(Arrays.asList 사용)
 
-//    public void setName(String name) {
-//        this.name=name;
-//    }
+//        for(MenuItem menuItem : menuItems)
+//            addMenuItem(menuItem);
+    }
 
     public void updateInformation(String name, String address) {
         this.name=name;
         this.address=address;
     }
+
+    //    public Restaurant(Long id, String name, String address) {
+//        this.id=id;
+//       this.name=name;
+//       this.address =address;
+//    }
+
+    //   public void addMenuItem(MenuItem menuItem) {
+//        if(menuItems==null){
+//            menuItems=new ArrayList<>();
+//        }
+//
+//        menuItems.add(menuItem);
+//    }
+
+//    public void setName(String name) {
+//        this.name=name;
+//    }
+
+
 }

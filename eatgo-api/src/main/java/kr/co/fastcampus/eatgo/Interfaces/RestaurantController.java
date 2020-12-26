@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -46,6 +47,8 @@ public class RestaurantController {
     @GetMapping("/restaurants/{id}")    //id값은 변수임
     public Restaurant detail(@PathVariable("id") Long id){     //@path~ = 주소에 있는 변수를 파라메타로
         Restaurant restaurant=restaurantService.getRestaurant(id);  //(1)기본정보+(2)메뉴정보 >>> 어플리케이션(복잡한 것을 단순화)
+        //에러처리 >> RestaurantErrorAdvice.class 생성해서 처리!
+
 //        List<Restaurant> restaurants=new ArrayList<>();     //컬렉션 만듦
 //        restaurants.add(new Restaurant(1004L,"Bob zip","Seoul"));   //멤버추가
 //        restaurants.add(new Restaurant(2020L,"Cyber Food","Seoul"));
@@ -64,12 +67,11 @@ public class RestaurantController {
 
     }
     @PostMapping("/restaurants")
-    public ResponseEntity<?> create(@RequestBody Restaurant resource) throws URISyntaxException {
-        String name = resource.getName();
-        String address = resource.getAddress();
-
-        Restaurant restaurant=new Restaurant(name, address);
-        restaurantService.addRestaurant(restaurant);
+    public ResponseEntity<?> create(@Valid @RequestBody Restaurant resource) throws URISyntaxException {    //valid추가 > Restaurant에서 valid 어노테이션(ex. @notnull)을 붙여줌
+        Restaurant restaurant= restaurantService.addRestaurant(Restaurant.builder()
+                .name(resource.getName())       //우클릭>inline variable로 변수 선언 따로 안하고 한줄로 퉁치기
+                .address(resource.getAddress())
+                .build());  //new Restaurant(name, address); 대신에 이렇게 생성 가능
 
         URI location=new URI("/restaurants/"+restaurant.getId());
         return ResponseEntity.created(location).body("{}");
@@ -77,7 +79,7 @@ public class RestaurantController {
 
     @PatchMapping("/restaurants/{id}")
     public String update(@PathVariable("id") Long id,
-                         @RequestBody Restaurant resource){     //restaurant=> resource
+                         @Valid @RequestBody Restaurant resource){     //restaurant=> resource
         String name = resource.getName();
         String address = resource.getAddress();
         restaurantService.updateRestaurant(id, name, address);  //=introduce variable

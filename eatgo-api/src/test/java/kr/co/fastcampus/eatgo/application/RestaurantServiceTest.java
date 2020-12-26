@@ -28,7 +28,7 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
 
     @Before// 모든 테스트가 실행되기 전에 아래를 반드시 실행
     public void setUp(){
-        MockitoAnnotations.initMocks(this);     //실제 mock객체를 초기화 해줌
+        MockitoAnnotations.initMocks(this);     //실제 mock객체를 할당하여 초기화 해야함
 
         mockRestaurantRepository();
         mockMenuItemRepository();
@@ -39,26 +39,34 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
         //직접 넣어줌(서비스의 레파지토리로 레스토랑레&메뉴 레파지토리를 넣어줌)
     }
 
-    private void mockMenuItemRepository() {
-        List<MenuItem> menuItems=new ArrayList<>();
-        menuItems.add(new MenuItem("Kimchi"));
-        given(menuItemRepository.findAllByRestaurantId(1004L)).willReturn(menuItems);
-        //menuitems를 올바르게 반환하도록함
-    }
-
-    private void mockRestaurantRepository() {       //길어서 따로 메서드로 빼줌
+    private void mockRestaurantRepository() {       //setup안에 할 것을 길어서 따로 메서드로 빼줌
         List<Restaurant> restaurants=new ArrayList<>();
-        Restaurant restaurant=new Restaurant(1004L,"Bob zip","Seoul");
+        Restaurant restaurant = Restaurant.builder()
+                .id(1004L)
+                .name("Bob zip")
+                .address("Seoul")
+                .build();
         restaurants.add(restaurant);
 
         given(restaurantRepository.findAll()).willReturn(restaurants);
         given(restaurantRepository.findById(1004L)).willReturn(Optional.of(restaurant));
-        //findAll과 findById가 각각 restaurants, restaurant를 올바르게 반환하도록 함
+        //findAll과 findById가 각각 restaurants, restaurant를 올바르게 반환하도록 해야함
 
     }
 
+    private void mockMenuItemRepository() {  //setup안에 할 것을 길어서 따로 메서드로 빼줌2
+        List<MenuItem> menuItems=new ArrayList<>();
+        menuItems.add(MenuItem.builder()
+                .name("Kimchi")
+                .build());
+        given(menuItemRepository.findAllByRestaurantId(1004L)).willReturn(menuItems);
+        //menuitems를 올바르게 반환하도록함
+    }
+
+    //이렇게 service에만 집중하고 repository를 가짜로 만듦으로써 실제 repository의 구현과 상관없이 서비스를 어떻게 활용할 것인지 확인 가능
+
     @Test
-    public void getRestaurant(){        //레스토랑 정보 얻기
+    public void getRestaurantWithExisted(){        //레스토랑 정보 얻기
         Restaurant restaurant=restaurantService.getRestaurant(1004L);       //rest~Service -> field로 만들어줌
 
         assertThat(restaurant.getId(),is(1004L));   //assertthat import >> junit
@@ -67,6 +75,12 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
 
         assertThat(menuItem.getName(), is("Kimchi"));
     }
+
+    @Test(expected = RestaurantNotFoundException.class) //요청만 해도 예외발생(=~.class실행) 원함
+    public void getRestaurantWithNotExisted(){
+        restaurantService.getRestaurant(404l);
+    }
+
 
 
     @Test
@@ -79,10 +93,24 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
 
     @Test
     public void addRestaurant(){
-        Restaurant restaurant = new Restaurant("BeRyong", "Busan");
-        Restaurant saved = new Restaurant(1234L,"BeRyong", "Busan");
+        given(restaurantRepository.save(any())).will(invocation ->{
+            Restaurant restaurant = invocation.getArgument(0);
+            restaurant.setId(1234l);
+            return restaurant;
+        });
 
-        given(restaurantRepository.save(any())).willReturn(saved);
+        Restaurant restaurant = Restaurant.builder()
+                .name("BeRyong")
+                .address("Busan")
+                .build();
+//        Restaurant saved =  Restaurant.builder()
+//                .id(1234L)
+//                .name("BeRyong")
+//                .address("Busan")
+//                .build();
+//
+//       given(restaurantRepository.save(any())).willReturn(saved);
+//          >> saved+given = 맨위에 given~로 대체
 
         Restaurant created=restaurantService.addRestaurant(restaurant);
 
@@ -91,7 +119,11 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
 
     @Test
     public void updateRestaurant(){
-        Restaurant restaurant=new Restaurant(1004L,"Bob zip","Seoul");
+        Restaurant restaurant= Restaurant.builder()
+                .id(1004L)
+                .name("Bob zip")
+                .address("Seoul")
+                .build();
 
         given(restaurantRepository.findById(1004L))
                 .willReturn(Optional.of(restaurant));

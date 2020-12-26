@@ -1,9 +1,6 @@
 package kr.co.fastcampus.eatgo.application;
 
-import kr.co.fastcampus.eatgo.domain.MenuItem;
-import kr.co.fastcampus.eatgo.domain.MenuItemRepository;
-import kr.co.fastcampus.eatgo.domain.Restaurant;
-import kr.co.fastcampus.eatgo.domain.RestaurantRepository;
+import kr.co.fastcampus.eatgo.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +19,8 @@ public class RestaurantService {
     }
 
     public Restaurant getRestaurant(Long id){
-        Restaurant restaurant=restaurantRepository.findById(id).orElse(null);    //id가 매칭되는 레스토랑 객체를 repository에서 가지고 옴
+        Restaurant restaurant=restaurantRepository.findById(id)     //id가 매칭되는 레스토랑 객체를 repository에서 가지고 옴
+                .orElseThrow(()->new RestaurantNotFoundException(id));    //아니라면 예외처리
 
         List<MenuItem> menuItems=menuItemRepository.findAllByRestaurantId(id);        //(2)메뉴정보
         restaurant.setMenuItems(menuItems);

@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.core.StringContains.containsString;
@@ -31,7 +32,7 @@ public class RestaurantControllerTests {
     @MockBean // 실제 테스트하는 것(여기선 restauarantController) 이외의 것들을 가짜로 대체
     private  RestaurantService restaurantService;
 // RestauarantController가 직접적으로 restaurantService를 의존하고 있는데 이를 가짜로 대체=>가짜는 repository를 사용하지 않음
-    //가짜 restaurantService도 올바른 결과를 내도록 테스트를 만들어줘야함
+    //가짜 restaurantService도 올바른 결과를 내도록 테스트를 만들어줘야함(밑에 리스트 수정)
 
     //밑(진짜객체)은 가짜객체로 대체하면서 삭제
 //    @SpyBean(RestaurantService.class)           // reposit  ory+menuitem
@@ -48,8 +49,14 @@ public class RestaurantControllerTests {
     @Test
     public void list() throws Exception {       //throws Exception: perform예외
         List<Restaurant> restaurants=new ArrayList<>();
-        restaurants.add(new Restaurant(1004L,"JOKER House","Seoul"));
-        given(restaurantService.getRestaurants()).willReturn(restaurants); //getRestaurants()를 하면 가짜의 레스토랑 목록을 돌려줄것이다
+        restaurants.add(Restaurant.builder()
+                .id(1004L)
+                .name("JOKER House")
+                .address("Seoul")
+                .build());
+        given(restaurantService.getRestaurants()).willReturn(restaurants);
+        //여기까지 코드 : 가짜 객체 restaurantService를 통해 가짜 목록을 생성, (마지막)getRestaurants()를 하면 (가짜)레스토랑 목록을 돌려줄것이다
+        //가짜객체를 이용하면 실제 service와 상관없이 테스트를 할 수 있음
         //given->BDD MOKITO,
 
         mvc.perform( get("/restaurants"))    //get 실행요청, url의 컬렉션 부분이 restaurants
@@ -69,13 +76,25 @@ public class RestaurantControllerTests {
     }
 
     @Test
-    public void detail() throws Exception {
-        Restaurant restaurant1=new Restaurant(1004L,"JOKER House","Seoul");
-        restaurant1.addMenuItem(new MenuItem("Kimchi"));
-        given(restaurantService.getRestaurant(1004L)).willReturn(restaurant1);
+    public void detailWithExisted() throws Exception {
+        Restaurant restaurant1=Restaurant.builder()
+                .id(1004L)
+                .name("JOKER House")
+                .address("Seoul")
+                .build();
+        MenuItem menuItem=MenuItem.builder()
+                .name("Kimchi")
+                .build();
+        restaurant1.setMenuItems(Arrays.asList(menuItem));    //asList :
+        given(restaurantService.getRestaurant(1004L)).willReturn(restaurant1); //가짜객체로 테스트
 
-        Restaurant restaurant2=new Restaurant(2020L,"Cyber Food","Seoul");
-        restaurant2.addMenuItem(new MenuItem("Kimchi"));
+        Restaurant restaurant2=Restaurant.builder()
+                .id(2020L)
+                .name("Cyber Food")
+                .address("Seoul")
+                .build();
+        restaurant2.setMenuItems(Arrays.asList(menuItem));
+
         given(restaurantService.getRestaurant(2020L)).willReturn(restaurant2);
 
         mvc.perform(get("/restaurants/1004"))
@@ -94,14 +113,29 @@ public class RestaurantControllerTests {
                         "\"name\":\"Cyber Food\"")));
     }
 
+    @Test
+    public void detailWithNotExisted() throws Exception{ //404: 에러발생으로 설정
+        given(restaurantService.getRestaurant(404L)).willThrow(new RestaurantNotFoundException(404L));
+                //RestaurantNotFoundException클래스 생성(domain에)
+
+        //실제 에러처리는 RestaurantController에서
+        mvc.perform(get("/restaurants/404"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("{}")); //Json포맷으로 빈 내용을 나타내고 싶음
+
+    }
+
     @Test   //가게 추가하기
-    public void create() throws Exception {
+    public void createWithValidData() throws Exception {        //create -> createWithVlidData : 올바른 데이터로 생성테스트, controller에서 create에 restaurant객체 매개변수에 @valid추가
 //        Restaurant restaurant=new Restaurant(1234L,"BeRyong","Seoul");
         given(restaurantService.addRestaurant(any())).will(invocation -> {
             Restaurant restaurant=invocation.getArgument(0);
-            return new Restaurant(1234L,restaurant.getName(),
-                    restaurant.getAddress());
-        });//////////////이거 언제 지혼자 추가함?ㅁㅊ넘이
+            return Restaurant.builder()
+                    .id(1234L)
+                    .name(restaurant.getName())
+                    .address(restaurant.getAddress())
+                    .build();
+        });
 
         mvc.perform(post("/restaurants")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -114,13 +148,40 @@ public class RestaurantControllerTests {
     }
 
     @Test
-    public void update() throws Exception {
+    public void createWithInValidData() throws Exception {  // 올바르지 않게 데이터를 입력했을 때 생성test
+        //add는 다 없앰
+        mvc.perform(post("/restaurants")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("  {\"name\":\"\",\"address\":\"\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    public void updateWithValidData() throws Exception {
 
         mvc.perform(patch("/restaurants/1004")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"JOKER Bar\", \"address\":\"Busan\"}")
-        )
-                        .andExpect(status().isOk());    //200번
+                .content("{\"name\": \"JOKER Bar\", \"address\":\"Busan\"}"))
+                .andExpect(status().isOk());    //200번
         verify(restaurantService).updateRestaurant(1004L,"JOKER Bar","Busan");
+    }
+
+    @Test
+    public void updateWithInValidData() throws Exception {
+
+        mvc.perform(patch("/restaurants/1004")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"\", \"address\":\"\"}"))
+                .andExpect(status().isBadRequest());    //400번
+    }
+
+    @Test
+    public void updateWithoutName() throws Exception {
+
+        mvc.perform(patch("/restaurants/1004")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"\", \"address\":\"Busan\"}"))
+                .andExpect(status().isBadRequest());    //400번
     }
 }
