@@ -14,6 +14,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 
 public class RestaurantServiceTest {    //일반적인 테스트라서 autowired로 의존관계를 주입해줄 수 없음(?) => 직접 repository와 연결하도록
@@ -26,16 +27,20 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
     @Mock
     private MenuItemRepository menuItemRepository;
 
+    @Mock
+    private ReviewRepository reviewRepository;
+
     @Before// 모든 테스트가 실행되기 전에 아래를 반드시 실행
     public void setUp(){
         MockitoAnnotations.initMocks(this);     //실제 mock객체를 할당하여 초기화 해야함
 
         mockRestaurantRepository();
         mockMenuItemRepository();
+        mockReviewRepository();
 
 //        restaurantRepository=new RestaurantRepositoryImpl();      //가짜 객체를 사용함으로 진짜객체는 필요없음
 //        menuItemRepository=new MenuItemRepositoryImpl();
-        restaurantService=new RestaurantService(restaurantRepository,menuItemRepository);
+        restaurantService=new RestaurantService(restaurantRepository,menuItemRepository,reviewRepository);
         //직접 넣어줌(서비스의 레파지토리로 레스토랑레&메뉴 레파지토리를 넣어줌)
     }
 
@@ -54,31 +59,48 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
 
     }
 
-    private void mockMenuItemRepository() {  //setup안에 할 것을 길어서 따로 메서드로 빼줌2
+    private void mockMenuItemRepository() {
         List<MenuItem> menuItems=new ArrayList<>();
         menuItems.add(MenuItem.builder()
                 .name("Kimchi")
                 .build());
         given(menuItemRepository.findAllByRestaurantId(1004L)).willReturn(menuItems);
-        //menuitems를 올바르게 반환하도록함
+    }
+
+    private void mockReviewRepository() {
+        List<Review> reviews=new ArrayList<>();
+        reviews.add(Review.builder()
+                .name("JOKER")
+                .score(5)
+                .description("Great!")
+                .build());
+
+        given(reviewRepository.findAllByRestaurantId(1004L)).willReturn(reviews);
     }
 
     //이렇게 service에만 집중하고 repository를 가짜로 만듦으로써 실제 repository의 구현과 상관없이 서비스를 어떻게 활용할 것인지 확인 가능
 
     @Test
     public void getRestaurantWithExisted(){        //레스토랑 정보 얻기
-        Restaurant restaurant=restaurantService.getRestaurant(1004L);       //rest~Service -> field로 만들어줌
+        Restaurant restaurant=restaurantService.getRestaurant(1004L);
+
+        verify(menuItemRepository).findAllByRestaurantId(1004L);
+        verify(reviewRepository).findAllByRestaurantId(1004L);
 
         assertThat(restaurant.getId(),is(1004L));   //assertthat import >> junit
 
         MenuItem menuItem=restaurant.getMenuItems().get(0);
 
         assertThat(menuItem.getName(), is("Kimchi"));
+
+        Review review=restaurant.getReviews().get(0);
+
+        assertThat(review.getDescription(),is("Great!"));
     }
 
     @Test(expected = RestaurantNotFoundException.class) //요청만 해도 예외발생(=~.class실행) 원함
     public void getRestaurantWithNotExisted(){
-        restaurantService.getRestaurant(404l);
+        restaurantService.getRestaurant(404L);
     }
 
 
@@ -95,7 +117,7 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
     public void addRestaurant(){
         given(restaurantRepository.save(any())).will(invocation ->{
             Restaurant restaurant = invocation.getArgument(0);
-            restaurant.setId(1234l);
+            restaurant.setId(1234L);
             return restaurant;
         });
 

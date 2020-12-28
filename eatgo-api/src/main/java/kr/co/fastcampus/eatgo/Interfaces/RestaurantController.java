@@ -68,10 +68,7 @@ public class RestaurantController {
     }
     @PostMapping("/restaurants")
     public ResponseEntity<?> create(@Valid @RequestBody Restaurant resource) throws URISyntaxException {    //valid추가 > Restaurant에서 valid 어노테이션(ex. @notnull)을 붙여줌
-        Restaurant restaurant= restaurantService.addRestaurant(Restaurant.builder()
-                .name(resource.getName())       //우클릭>inline variable로 변수 선언 따로 안하고 한줄로 퉁치기
-                .address(resource.getAddress())
-                .build());  //new Restaurant(name, address); 대신에 이렇게 생성 가능
+        Restaurant restaurant= restaurantService.addRestaurant(resource);  //new Restaurant(name, address); 대신에 이렇게 생성 가능
 
         URI location=new URI("/restaurants/"+restaurant.getId());
         return ResponseEntity.created(location).body("{}");

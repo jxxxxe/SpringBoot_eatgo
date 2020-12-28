@@ -31,19 +31,16 @@ public class Restaurant {
 
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Setter
     private List<MenuItem> menuItems;     //addmenuitems 메서드에 따라 필드에 추가
+
+    @Setter
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Review> reviews;
 
     public String getInformation() {
         return name+" in "+ address;
-    }
-
-    public void setMenuItems(List<MenuItem> menuItems) {
-       this.menuItems=new ArrayList<>(menuItems);   //menuitems생성을 위에 선언에서 안해줬으므로 여기서 함
-        //set은 새로 등록하는 것
-        // addmenuitems 메서드를 없앰 >> addmenuitems를 단독으로 쓰는 파일에서 setmenuitems를 사용하도록 함(Arrays.asList 사용)
-
-//        for(MenuItem menuItem : menuItems)
-//            addMenuItem(menuItem);
     }
 
     public void updateInformation(String name, String address) {

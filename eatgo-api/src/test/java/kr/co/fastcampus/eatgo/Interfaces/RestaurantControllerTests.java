@@ -77,7 +77,7 @@ public class RestaurantControllerTests {
 
     @Test
     public void detailWithExisted() throws Exception {
-        Restaurant restaurant1=Restaurant.builder()
+        Restaurant restaurant=Restaurant.builder()
                 .id(1004L)
                 .name("JOKER House")
                 .address("Seoul")
@@ -85,32 +85,24 @@ public class RestaurantControllerTests {
         MenuItem menuItem=MenuItem.builder()
                 .name("Kimchi")
                 .build();
-        restaurant1.setMenuItems(Arrays.asList(menuItem));    //asList :
-        given(restaurantService.getRestaurant(1004L)).willReturn(restaurant1); //가짜객체로 테스트
-
-        Restaurant restaurant2=Restaurant.builder()
-                .id(2020L)
-                .name("Cyber Food")
-                .address("Seoul")
+        Review review=Review.builder()
+                .name("JOKER")
+                .score(5)
+                .description("Great!")
                 .build();
-        restaurant2.setMenuItems(Arrays.asList(menuItem));
 
-        given(restaurantService.getRestaurant(2020L)).willReturn(restaurant2);
+        restaurant.setMenuItems(Arrays.asList(menuItem));
+        restaurant.setReviews(Arrays.asList(review));
+
+        given(restaurantService.getRestaurant(1004L)).willReturn(restaurant);
 
         mvc.perform(get("/restaurants/1004"))
-            .andExpect(status().isOk())
-             .andExpect(content().string(containsString(
-                "\"id\":1004")))            //해당 string이 포함되어 있는지 확인
-            .andExpect(content().string(containsString(
-                        "\"name\":\"JOKER House\"")))
-            .andExpect(content().string(containsString("Kimch")));
-
-        mvc.perform(get("/restaurants/2020"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(
-                        "\"id\":2020")))            //해당 string이 포함되어 있는지 확인
-                .andExpect(content().string(containsString(
-                        "\"name\":\"Cyber Food\"")));
+                .andExpect(content().string(containsString("\"id\":1004")))            //해당 string이 포함되어 있는지 확인
+                .andExpect(content().string(containsString("\"name\":\"JOKER House\"")))
+                .andExpect(content().string(containsString("Kimch")))
+                .andExpect(content().string(containsString("Great!")));
+
     }
 
     @Test

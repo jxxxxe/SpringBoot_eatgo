@@ -10,12 +10,17 @@ import java.util.List;
 public class RestaurantService {
     @Autowired
     RestaurantRepository restaurantRepository;
+
     @Autowired
      MenuItemRepository menuItemRepository;
 
-    public RestaurantService(RestaurantRepository restaurantRepository,MenuItemRepository menuItemRepository) {//TEST에 맞춰 생성자가 수정됨
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    public RestaurantService(RestaurantRepository restaurantRepository,MenuItemRepository menuItemRepository, ReviewRepository reviewRepository) {//TEST에 맞춰 생성자가 수정됨
         this.restaurantRepository=restaurantRepository;     //TEST에 맞춰 생성자가 수정됨
         this.menuItemRepository=menuItemRepository;
+        this.reviewRepository=reviewRepository;
     }
 
     public Restaurant getRestaurant(Long id){
@@ -24,6 +29,10 @@ public class RestaurantService {
 
         List<MenuItem> menuItems=menuItemRepository.findAllByRestaurantId(id);        //(2)메뉴정보
         restaurant.setMenuItems(menuItems);
+
+        List<Review> reviews=reviewRepository.findAllByRestaurantId(id);
+        restaurant.setReviews(reviews);
+
         return restaurant;
     }
 
