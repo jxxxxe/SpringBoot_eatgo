@@ -56,12 +56,13 @@ public class RestaurantControllerTests {
                 .id(1004L)
                 .name("JOKER House")
                 .address("Seoul")
+                .categoryId(1L)
                 .build());
-        given(restaurantService.getRestaurants()).willReturn(restaurants);        //given->BDD MOKITO,
+        given(restaurantService.getRestaurants("Seoul",1L)).willReturn(restaurants);        //given->BDD MOKITO,
         //여기까지 코드 : 가짜 객체 restaurantService를 통해 가짜 목록을 생성, (마지막)getRestaurants()를 하면 (가짜)레스토랑 목록을 돌려줄것이다
         //가짜객체를 이용하면 실제 service와 상관없이 테스트를 할 수 있음
 
-        mvc.perform( get("/restaurants"))    //get 실행요청  / perform > add exception(예외처리)
+        mvc.perform( get("/restaurants?region=Seoul&category=1"))    //get 실행요청  / perform > add exception(예외처리)
                .andExpect(status().isOk())
                 .andExpect(content().string(containsString("\"id\":1004")))            //해당 string이 포함되어 있는지 확인
                 .andExpect(content().string(containsString("\"name\":\"JOKER House\""))); // content > import2 , containsString > import3
@@ -76,6 +77,7 @@ public class RestaurantControllerTests {
                 .id(1004L)
                 .name("JOKER House")
                 .address("Seoul")
+                .categoryId(1L)
                 .build();
         MenuItem menuItem=MenuItem.builder()
                 .name("Kimchi")

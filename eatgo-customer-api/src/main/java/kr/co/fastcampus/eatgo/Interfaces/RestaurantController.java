@@ -28,15 +28,13 @@ public class RestaurantController {
     private RestaurantService restaurantService;
 //Menu~ -> import class
 
-    @GetMapping("/restaurants")     //컨트롤러 처음 만들 때 부터
-    public List<Restaurant> list(){     //리스트를 돌려주는 메서드
-                                        // List > import
-       /* List<Restaurant> restaurants=new ArrayList<>();
-       // Restaurant restaurant=new Restaurant(1004L,"Bob zip","Seoul");
-        restaurants.add(new Restaurant(1004L,"Bob zip","Seoul"));   //멤버추가
-        restaurants.add(new Restaurant(2020L,"Cyber Food","Seoul"));
-*/
-        List <Restaurant> restaurants= restaurantService.getRestaurants();  //새로운 메서드를 만들어서 (1)+(2)정보 모두 얻게 해보자
+    @GetMapping("/restaurants")
+    public List<Restaurant> list(
+            @RequestParam("region") String region,
+            @RequestParam("category") Long category
+    ){
+
+        List <Restaurant> restaurants= restaurantService.getRestaurants(region,category);  //새로운 메서드를 만들어서 (1)+(2)정보 모두 얻게 해보자
         //=restaurantRepository.findAll(); //저장소에서 정보를 얻어서 그것을 레스토랑에 (1) 기본정보
             //repository > field추가
             // findAll() > create

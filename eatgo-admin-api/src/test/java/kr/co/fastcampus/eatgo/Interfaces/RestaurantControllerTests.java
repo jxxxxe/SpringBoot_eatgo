@@ -53,6 +53,7 @@ public class RestaurantControllerTests {
                 .id(1004L)
                 .name("JOKER House")
                 .address("Seoul")
+                .categoryId(1L)
                 .build());
         given(restaurantService.getRestaurants()).willReturn(restaurants);
         //여기까지 코드 : 가짜 객체 restaurantService를 통해 가짜 목록을 생성, (마지막)getRestaurants()를 하면 (가짜)레스토랑 목록을 돌려줄것이다
@@ -73,6 +74,7 @@ public class RestaurantControllerTests {
                 .id(1004L)
                 .name("JOKER House")
                 .address("Seoul")
+                .categoryId(1L)
                 .build();
 
 
@@ -105,12 +107,13 @@ public class RestaurantControllerTests {
                     .id(1234L)
                     .name(restaurant.getName())
                     .address(restaurant.getAddress())
+                    .categoryId(1L)
                     .build();
         });
 
         mvc.perform(post("/restaurants")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("  {\"name\":\"Beryong\",\"address\":\"Busan\"}"))
+                .content("  {\"name\":\"Beryong\",\"address\":\"Busan\",\"categoryId\":1}"))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("location","/restaurants/1234"))
                 .andExpect(content().string("{}"));
@@ -123,7 +126,7 @@ public class RestaurantControllerTests {
         //add는 다 없앰
         mvc.perform(post("/restaurants")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("  {\"name\":\"\",\"address\":\"\"}"))
+                .content("  {\"name\":\"\",\"address\":\"\",,\"categoryId\":}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -133,7 +136,7 @@ public class RestaurantControllerTests {
 
         mvc.perform(patch("/restaurants/1004")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"JOKER Bar\", \"address\":\"Busan\"}"))
+                .content("{\"name\": \"JOKER Bar\", \"address\":\"Busan\",\"categoryId\":1}"))
                 .andExpect(status().isOk());    //200번
         verify(restaurantService).updateRestaurant(1004L,"JOKER Bar","Busan");
     }
@@ -143,7 +146,7 @@ public class RestaurantControllerTests {
 
         mvc.perform(patch("/restaurants/1004")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"\", \"address\":\"\"}"))
+                .content("{\"name\": \"\", \"address\":\"\",\"categoryId\":}"))
                 .andExpect(status().isBadRequest());    //400번
     }
 
@@ -152,7 +155,7 @@ public class RestaurantControllerTests {
 
         mvc.perform(patch("/restaurants/1004")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"\", \"address\":\"Busan\"}"))
+                .content("{\"name\": \"\", \"address\":\"Busan\",\"categoryId\":1}"))
                 .andExpect(status().isBadRequest());    //400번
     }
 }

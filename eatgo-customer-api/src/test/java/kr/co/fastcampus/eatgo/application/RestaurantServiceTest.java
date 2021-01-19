@@ -54,9 +54,9 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
                 .build();
         restaurants.add(restaurant);
 
-        given(restaurantRepository.findAll()).willReturn(restaurants);
+        given(restaurantRepository.findAllByAddressContainingAndCategoryId("Seoul",1L)).willReturn(restaurants);
         given(restaurantRepository.findById(1004L)).willReturn(Optional.of(restaurant));
-        //findAll과 findById가 각각 restaurants, restaurant를 올바르게 반환하도록 해야함
+        //findAll과 findById가 각각 restaurants, restaurant를 올바르게 반환하도록 해야함h
 
     }
 
@@ -108,7 +108,7 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
 
     @Test
     public void getRestaurants() {        //레스토랑 정보 얻기
-        List<Restaurant> restaurants = restaurantService.getRestaurants();
+        List<Restaurant> restaurants = restaurantService.getRestaurants("Seoul",1L);
         Restaurant restaurant = restaurants.get(0); //첫번째를 get
         assertThat(restaurant.getId(), is(1004L));     //변수를 refactor, / 첫번째의 id가 1004인지 확인
 

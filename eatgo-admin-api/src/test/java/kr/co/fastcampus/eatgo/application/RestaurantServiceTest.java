@@ -72,6 +72,10 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
 
     @Test
     public void addRestaurant(){
+
+//       Restaurant saved =  Restaurant.builder().id(1234L).name("BeRyong").address("Busan").build();
+//       given(restaurantRepository.save(any())).willReturn(saved); >> saved+given = 바로 밑에 given~로 대체
+
         given(restaurantRepository.save(any())).will(invocation ->{
             Restaurant restaurant = invocation.getArgument(0);
             restaurant.setId(1234L);
@@ -81,10 +85,8 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
         Restaurant restaurant = Restaurant.builder()
                 .name("BeRyong")
                 .address("Busan")
+                .categoryId(1L)
                 .build();
-
-//       Restaurant saved =  Restaurant.builder().id(1234L).name("BeRyong").address("Busan").build();
-//       given(restaurantRepository.save(any())).willReturn(saved); >> saved+given = 맨위에 given~로 대체
 
         Restaurant created=restaurantService.addRestaurant(restaurant);
 
@@ -97,6 +99,7 @@ public class RestaurantServiceTest {    //일반적인 테스트라서 autowired
                 .id(1004L)
                 .name("Bob zip")
                 .address("Seoul")
+                .categoryId(1L)
                 .build();
 
         given(restaurantRepository.findById(1004L))

@@ -23,6 +23,11 @@ public class RestaurantService {
         this.reviewRepository=reviewRepository;
     }
 
+    public List<Restaurant> getRestaurants(String region,Long category) {
+        List<Restaurant> restaurants=restaurantRepository.findAllByAddressContainingAndCategoryId(region,category);
+        return restaurants;
+    }
+
     public Restaurant getRestaurant(Long id){
         Restaurant restaurant=restaurantRepository.findById(id)     //id가 매칭되는 레스토랑 객체를 repository에서 가지고 옴
                 .orElseThrow(()->new RestaurantNotFoundException(id));    //아니라면 예외처리
@@ -34,12 +39,6 @@ public class RestaurantService {
         restaurant.setReviews(reviews);
 
         return restaurant;
-    }
-
-    public List<Restaurant> getRestaurants() {
-        List<Restaurant> restaurants=restaurantRepository.findAll();
-        return restaurants;
-
     }
 
 }
