@@ -38,6 +38,8 @@ public class RestaurantService {
 
         restaurant.updateInformation(name,address);
 
+        restaurantRepository.save(restaurant);
+
         return restaurant;
     }
 }

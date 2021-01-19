@@ -30,7 +30,7 @@ public class Restaurant {
     @NotEmpty
     private String address;
 
-    @NotEmpty
+    @NotNull
     private Long categoryId;
 
     @Setter

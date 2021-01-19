@@ -126,7 +126,7 @@ public class RestaurantControllerTests {
         //add는 다 없앰
         mvc.perform(post("/restaurants")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("  {\"name\":\"\",\"address\":\"\",,\"categoryId\":}"))
+                .content("  {\"name\":\"\",\"address\":\"\",\"categoryId\":}"))
                 .andExpect(status().isBadRequest());
     }
 
