@@ -31,9 +31,12 @@ public class User {
     @Setter
     private Long level;
 
+    private String password;
+
     public void deactivate() {
         this.level=0L;
     }
+
 
     public boolean isAdmin(){
         return level>=3;

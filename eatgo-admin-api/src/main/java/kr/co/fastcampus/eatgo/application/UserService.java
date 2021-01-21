@@ -23,7 +23,8 @@ public class UserService {
 
     public User addUser(String email, String name) {
         User user=User.builder().email(email).name(name).level(1L).build();
-        return userRepository.save(user);
+        userRepository.save(user);
+        return user;
     }
 
     public User updateUser(Long id, String email, String name, Long level) {

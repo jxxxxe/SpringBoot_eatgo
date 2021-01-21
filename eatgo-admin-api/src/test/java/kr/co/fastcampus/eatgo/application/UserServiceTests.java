@@ -13,7 +13,9 @@ import java.util.Optional;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 public class UserServiceTests {
 
@@ -39,6 +41,17 @@ public class UserServiceTests {
         User user=users.get(0);
 
         assertThat(user.getName(),is("Tester"));
+    }
+
+    @Test
+    public void addUser(){
+        String email="tester@example.com";
+        String name="Tester";
+
+        User user=userService.addUser(email,name);
+
+        verify(userRepository).save(any());
+        assertThat(user.getName(),is(name));
     }
 
     @Test
